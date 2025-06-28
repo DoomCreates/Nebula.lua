@@ -1,0 +1,145 @@
+getgenv().MainAccountName = ""
+
+getgenv().Settings = {
+    ["AutoParry"] = {
+        AutoParryEnabled = false,
+        AutoParryDistance = 10
+    },
+}
+
+-- ✅ Blacklist table added
+getgenv().Blacklist = {
+    ["TrollGuy123"] = true,
+    ["AnnoyingKid"] = true
+}
+
+-- ✅ Blacklist check function
+local function IsBlacklisted(PlayerName)
+    return getgenv().Blacklist[PlayerName] == true
+end
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+if not isfolder("ParryContact") then
+    makefolder("ParryContact")
+end
+
+writefile("ParryContact/ParryContacter.txt", "ParryPlaceholder")
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local CalculationModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/PawsThePaw/Paws.Utilities/refs/heads/main/NebulaCalculation.luau"))()
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local CollectionService = game:GetService("CollectionService")
+local Debris = game:GetService("Debris")
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local NetworkClient = game:GetService("NetworkClient")
+local Ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+
+local Balls = Workspace.Balls
+local TrainingBalls = Workspace.TrainingBalls
+local Alive = Workspace.Alive
+local TrainingLobby = Workspace.Spawn:FindFirstChild("LobbyTraining") and Workspace.Spawn.LobbyTraining.Lobby or nil
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+local Mouse = LocalPlayer:GetMouse()
+local CameraViewport = Camera.ViewportSize / 2
+local Height = LocalPlayer.Character.Humanoid.HipHeight + 0.5
+local WorldToScreenPoint = Camera:WorldToScreenPoint(LocalPlayer.Character.PrimaryPart.Position)
+local Abilities = LocalPlayer.Character.Abilities
+local PlayerGui = LocalPlayer.PlayerGui
+
+local AutoParrySettings = getgenv().Settings.AutoParry
+
+local RunnableFunctions = {}
+
+local Data = {
+    ["MainData"] = {
+        ["Connections"] = {}
+    },
+
+    ["AutoParryData"] = {
+        IsParried = false,
+        ParryHitTime = tick(),
+
+        SystemState = "",
+        CanParry = false,
+
+        ["BallData"] = {
+            Ball = nil,
+            
+            PlayerPosition = Vector3.zero,
+            Velocity = Vector3.zero,
+            Position = Vector3.zero,
+            Direction = Vector3.zero,
+            BallDirection = Vector3.zero,
+
+            PreviousVelocities = {},
+            PreviousPositions = {},
+
+            PreviousPosition = Vector3.zero,
+            PreviousDistance = 0,
+            PreviousVelocity = Vector3.zero,
+            PreviousDot = 0,
+
+            LastDeltaTime = 0,
+
+            Dot = 0,
+            Speed = 0,
+            Distance = 0,
+
+            StoredTick = tick(),
+            LastWarpTime = tick(),
+            LerpingRadians = 0,
+
+            IsCurving = false,
+        },
+    }
+}
+
+-- (unchanged) Verification, GenerateRandomString, RunFunctions, GetBall functions here
+
+local function GetBall()
+    for _, Ball in Balls:GetChildren() do
+        if Ball and Ball:GetAttribute("realBall") and Ball:GetAttribute("realBall") == true and Ball:IsA("BasePart") and Ball:IsDescendantOf(Balls) then
+            return Ball
+        end
+    end
+end
+
+-- ✅ Modified to respect blacklist
+local function GetMainAccountPlayer()
+    local name = getgenv().MainAccountName
+    if name ~= "" and not IsBlacklisted(name) and Players:FindFirstChild(name) then
+        return Players[name].Character
+    end
+    return nil
+end
+
+-- (unchanged) rest of the system...
+
+-- GUI ADJUSTMENT TAB: Add blacklist input field
+Tabs.AdjustmentTab:Input({
+    Title = "Add Username to Blacklist",
+    Placeholder = "Enter username to blacklist",
+    Callback = function(input)
+        local name = tostring(input)
+        if name ~= "" then
+            getgenv().Blacklist[name] = true
+            print(name .. " added to blacklist.")
+        end
+    end
+})
+
+-- (unchanged) Everything else continues as normal
