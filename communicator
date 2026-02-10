@@ -7,13 +7,13 @@ getgenv().Settings = {
     },
 }
 
--- ✅ Blacklist table added
+--  blacklist table added
 getgenv().Blacklist = {
     ["TrollGuy123"] = true,
     ["AnnoyingKid"] = true
 }
 
--- ✅ Blacklist check function
+-- blacklist check function
 local function IsBlacklisted(PlayerName)
     return getgenv().Blacklist[PlayerName] == true
 end
@@ -118,7 +118,7 @@ local function GetBall()
     end
 end
 
--- ✅ Modified to respect blacklist
+-- respect blacklist
 local function GetMainAccountPlayer()
     local name = getgenv().MainAccountName
     if name ~= "" and not IsBlacklisted(name) and Players:FindFirstChild(name) then
